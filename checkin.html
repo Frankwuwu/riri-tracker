@@ -27,13 +27,14 @@
   </div>
 
   <script>
-    // --- 【請修改這裡】 ---
+    // --- 【設定區】 ---
     const MY_LIFF_ID = "2008902676-U9YvNdol"; // LIFF B 的 ID
     const SUPABASE_URL = "https://eeonwngvnzfewdmglowf.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVlb253bmd2bnpmZXdkbWdsb3dmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg1MDI0NjEsImV4cCI6MjA4NDA3ODQ2MX0.PQE6GFObP3AA8hP4ECMCgSZoMKmA8fbdK_K4K20bQY0";
     // -------------------
 
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    // 🟢【修改點】改名為 supabaseClient，避免衝突
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     async function main() {
       await liff.init({ liffId: MY_LIFF_ID });
@@ -45,8 +46,9 @@
       if (phone.length < 9) { alert("請輸入正確號碼"); return; }
       const profile = await liff.getProfile();
 
+      // 🟢【修改點】這裡也改成用 supabaseClient 呼叫
       // 回溯更新：把這個人以前所有沒綁定手機的 GCLID 紀錄，全部補上這支手機
-      const { error } = await supabase.from('conversions')
+      const { error } = await supabaseClient.from('conversions')
         .update({ phone: phone, status: 'matched' })
         .eq('line_user_id', profile.userId)
         .is('phone', null);
