@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>日日好顏室 - 會員服務</title>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body { background: #f5f5f5; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; font-family: sans-serif; }
+    .loader { border: 4px solid #e0e0e0; border-top: 4px solid #06c755; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+    .text { margin-top: 20px; color: #666; font-size: 14px; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div class="loader"></div>
+  <div class="text">正在為您領取新客優惠...</div>
+
+  <script>
+    // --- 【請修改這裡】 ---
+    const MY_LIFF_ID = "2008902676-7bSTXlGJ"; // LIFF A 的 ID
+    const TARGET_URL = "https://page.line.me/glowdays"; // 加好友連結
+    const SUPABASE_URL = "https://eeonwngvnzfewdmglowf.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVlb253bmd2bnpmZXdkbWdsb3dmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg1MDI0NjEsImV4cCI6MjA4NDA3ODQ2MX0.PQE6GFObP3AA8hP4ECMCgSZoMKmA8fbdK_K4K20bQY0";
+    // -------------------
+
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    async function main() {
+      await liff.init({ liffId: MY_LIFF_ID });
+      
+      // 1. 自動跳出許可畫面 (攔截)
+      if (!liff.isLoggedIn()) {
+        liff.login({ redirectUri: window.location.href });
+        return;
+      }
+
+      // 2. 抓取 GCLID 並存檔
+      const profile = await liff.getProfile();
+      const urlParams = new URLSearchParams(window.location.search);
+      const gclid = urlParams.get('gclid');
+
+      if (gclid) {
+        // 檢查是否重複，避免重複寫入
+        const { data } = await supabase.from('conversions').select('id').eq('gclid', gclid).eq('line_user_id', profile.userId).single();
+        if (!data) {
+           await supabase.from('conversions').insert({
+            line_user_id: profile.userId,
+            gclid: gclid,
+            phone: null
+          });
+        }
+      }
+
+      // 3. 任務完成，送去加好友
+      window.location.replace(TARGET_URL);
+    }
+    main();
+  </script>
+</body>
+</html>

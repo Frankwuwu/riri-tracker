@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>日日好顏室 - 到店報到</title>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body { padding: 30px; font-family: sans-serif; text-align: center; background: #fff; }
+    input { width: 100%; padding: 15px; margin: 20px 0; border: 1px solid #ddd; border-radius: 8px; font-size: 18px; box-sizing: border-box; }
+    button { width: 100%; padding: 15px; background: #06c755; color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer;}
+    .hidden { display: none; }
+    h2 { color: #333; }
+  </style>
+</head>
+<body>
+  <div id="step1">
+    <h2>👋 歡迎光臨！</h2>
+    <p>請輸入手機號碼完成報到</p>
+    <input type="tel" id="phone" placeholder="09xx-xxx-xxx">
+    <button onclick="submitPhone()">確認報到</button>
+  </div>
+  <div id="step2" class="hidden">
+    <h2 style="color:#06c755">✅ 報到成功</h2>
+    <p>資料已確認，請出示給櫃檯人員。</p>
+  </div>
+
+  <script>
+    // --- 【請修改這裡】 ---
+    const MY_LIFF_ID = "2008902676-U9YvNdol"; // LIFF B 的 ID
+    const SUPABASE_URL = "https://eeonwngvnzfewdmglowf.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVlb253bmd2bnpmZXdkbWdsb3dmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg1MDI0NjEsImV4cCI6MjA4NDA3ODQ2MX0.PQE6GFObP3AA8hP4ECMCgSZoMKmA8fbdK_K4K20bQY0";
+    // -------------------
+
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    async function main() {
+      await liff.init({ liffId: MY_LIFF_ID });
+      if (!liff.isLoggedIn()) { liff.login({ redirectUri: window.location.href }); }
+    }
+
+    async function submitPhone() {
+      const phone = document.getElementById('phone').value;
+      if (phone.length < 9) { alert("請輸入正確號碼"); return; }
+      const profile = await liff.getProfile();
+
+      // 回溯更新：把這個人以前所有沒綁定手機的 GCLID 紀錄，全部補上這支手機
+      const { error } = await supabase.from('conversions')
+        .update({ phone: phone, status: 'matched' })
+        .eq('line_user_id', profile.userId)
+        .is('phone', null);
+
+      if(!error){
+        document.getElementById('step1').classList.add('hidden');
+        document.getElementById('step2').classList.remove('hidden');
+      } else {
+        alert("系統連線錯誤，請重試");
+      }
+    }
+    main();
+  </script>
+</body>
+</html>
