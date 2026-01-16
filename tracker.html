@@ -18,14 +18,15 @@
   <div class="text">正在為您領取新客優惠...</div>
 
   <script>
-    // --- 【請修改這裡】 ---
-    const MY_LIFF_ID = "2008902676-7bSTXlGJ"; // LIFF A 的 ID
-    const TARGET_URL = "https://page.line.me/glowdays"; // 加好友連結
+    // --- 【設定區】 ---
+    const MY_LIFF_ID = "2008902676-7bSTXlGJ"; 
+    const TARGET_URL = "https://page.line.me/glowdays"; 
     const SUPABASE_URL = "https://eeonwngvnzfewdmglowf.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVlb253bmd2bnpmZXdkbWdsb3dmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg1MDI0NjEsImV4cCI6MjA4NDA3ODQ2MX0.PQE6GFObP3AA8hP4ECMCgSZoMKmA8fbdK_K4K20bQY0";
     // -------------------
 
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    // 🟢【修改點】改名為 supabaseClient，避免跟上面的 CDN 衝突
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     async function main() {
       await liff.init({ liffId: MY_LIFF_ID });
@@ -42,10 +43,11 @@
       const gclid = urlParams.get('gclid');
 
       if (gclid) {
+        // 🟢【修改點】這裡也都改成用 supabaseClient 呼叫
         // 檢查是否重複，避免重複寫入
-        const { data } = await supabase.from('conversions').select('id').eq('gclid', gclid).eq('line_user_id', profile.userId).single();
+        const { data } = await supabaseClient.from('conversions').select('id').eq('gclid', gclid).eq('line_user_id', profile.userId).single();
         if (!data) {
-           await supabase.from('conversions').insert({
+           await supabaseClient.from('conversions').insert({
             line_user_id: profile.userId,
             gclid: gclid,
             phone: null
