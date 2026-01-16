@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>Glowdays Tracking Bridge</title>
+  <script>
+    (function () {
+      try {
+        var url = new URL(window.location.href);
+        var gclid = url.searchParams.get("gclid");
+
+        if (gclid) {
+          document.cookie =
+            "glowdays_gclid=" +
+            encodeURIComponent(gclid) +
+            "; path=/; max-age=" +
+            60 * 60 * 24 * 90;
+          console.log("✅ GCLID 已寫入 Cookie:", gclid);
+        } else {
+          console.log("⚠️ 目前網址沒有 gclid 參數");
+        }
+
+        window.location.href = "https://glowdays.tw/";
+      } catch (e) {
+        console.error("❌ bridge 發生錯誤:", e);
+        window.location.href = "https://glowdays.tw/";
+      }
+    })();
+  </script>
+</head>
+<body>
+  連線中，請稍候…
+</body>
+</html>
